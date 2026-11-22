@@ -30,6 +30,52 @@ app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
+
+app.get('/expenses', async (req, res) => {  
+    try {
+        let [rows] = await pool.query('SELECT * FROM expenses ORDER BY date DESC');
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
+app.get('/expenses/:id', async (req, res) => {
+    try {
+        let [rows] = await pool.query('SELECT * FROM expenses WHERE id = ?', [req.params.id]);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
+app.post('/expenses', async (req, res) => {
+    try {
+        let [rows] = await pool.query('INSERT INTO expenses (title, description, amount, category) VALUES (?, ?, ?, ?)', [req.body.title, req.body.description, req.body.amount, req.body.category]);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
+app.put('/expenses/:id', async (req, res) => {
+    try { 
+        let [rows] = await pool.query('UPDATE expenses SET title = ?, description = ?, amount = ?, category = ? WHERE id = ?', [req.body.title, req.body.description, req.body.amount, req.body.category, req.params.id]);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
+app.delete('/expenses/:id', async (req, res) => {
+    try {
+        let [rows] = await pool.query('DELETE FROM expenses WHERE id = ?', [req.params.id]);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
