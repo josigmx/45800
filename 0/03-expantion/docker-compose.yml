@@ -33,5 +33,15 @@ services:
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3105/health"]
 
+    
+  # the React client (nginx): http://localhost:8080
+  client:
+    build: ./client
+    ports:
+      - "8080:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+
 volumes:
   mysql_data:

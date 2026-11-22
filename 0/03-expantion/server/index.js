@@ -15,6 +15,7 @@ let pool = mysql.createPool({
 });
 
 let app = express();
+app.use(express.json());
 
 app.get('/health', async (req, res) => {
     try {
