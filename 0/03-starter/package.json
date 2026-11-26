@@ -1,0 +1,12 @@
+{
+  "name": "coffee-bot",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=.env bot.js",
+    "dev": "node --watch --env-file=.env bot.js"
+  },
+  "dependencies": {
+    "grammy": "^1.30.0"
+  }
+}
