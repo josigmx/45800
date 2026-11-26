@@ -1,0 +1,27 @@
+{
+  "name": "2 - Weekly summary (Telegram)",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [ { "field": "weeks", "triggerAtDay": [0], "triggerAtHour": 9 } ] } },
+      "id": "b1", "name": "Sunday 09:00", "type": "n8n-nodes-base.scheduleTrigger", "typeVersion": 1.2, "position": [0, 0]
+    },
+    {
+      "parameters": { "url": "http://server:3105/summary", "options": {} },
+      "id": "b2", "name": "GET summary", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [220, 0]
+    },
+    {
+      "parameters": { "jsCode": "const s = $input.first().json;\n\nconst lines = Object.entries(s.byCategory)\n  .map(([category, amount]) => '• ' + category + ': ₪' + amount);\n\nreturn [{\n  json: {\n    text: 'סיכום הוצאות: ₪' + s.total + '\\n' + lines.join('\\n')\n  }\n}];" },
+      "id": "b3", "name": "Build text", "type": "n8n-nodes-base.code", "typeVersion": 2, "position": [440, 0]
+    },
+    {
+      "parameters": { "chatId": "PUT_YOUR_CHAT_ID", "text": "={{ $json.text }}", "additionalFields": { "appendAttribution": false } },
+      "id": "b4", "name": "Telegram", "type": "n8n-nodes-base.telegram", "typeVersion": 1.2, "position": [660, 0], "webhookId": "b4-tg"
+    }
+  ],
+  "connections": {
+    "Sunday 09:00": { "main": [[{ "node": "GET summary", "type": "main", "index": 0 }]] },
+    "GET summary": { "main": [[{ "node": "Build text", "type": "main", "index": 0 }]] },
+    "Build text": { "main": [[{ "node": "Telegram", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "3 - Big expense alert (Telegram)",
+  "nodes": [
+    {
+      "parameters": { "httpMethod": "POST", "path": "big-expense", "options": {} },
+      "id": "c1", "name": "Webhook from server", "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [0, 0], "webhookId": "big-expense"
+    },
+    {
+      "parameters": { "chatId": "PUT_YOUR_CHAT_ID", "text": "=⚠ הוצאה גדולה: {{ $json.body.title }} - ₪{{ $json.body.amount }}", "additionalFields": { "appendAttribution": false } },
+      "id": "c2", "name": "Telegram", "type": "n8n-nodes-base.telegram", "typeVersion": 1.2, "position": [220, 0], "webhookId": "c2-tg"
+    }
+  ],
+  "connections": {
+    "Webhook from server": { "main": [[{ "node": "Telegram", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

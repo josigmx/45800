@@ -1,0 +1,50 @@
+{
+  "name": "4 - Expenses Agent (AI chat)",
+  "nodes": [
+    {
+      "parameters": { "options": {} },
+      "id": "d1", "name": "On chat message", "type": "@n8n/n8n-nodes-langchain.chatTrigger", "typeVersion": 1.1, "position": [0, 0], "webhookId": "expenses-agent-chat"
+    },
+    {
+      "parameters": { "options": { "systemMessage": "אתה עוזר לניהול הוצאות. ענה תמיד בעברית, בקצרה.\nהשתמש ב-get_summary כדי לענות על סכומים.\nהשתמש ב-get_expenses כדי לראות הוצאות.\nהשתמש ב-create_expense כדי להוסיף הוצאה.\nהקטגוריות האפשריות: אוכל, תחבורה, בילויים, כללי. בחר את המתאימה.\nאל תמציא סכומים." } },
+      "id": "d2", "name": "AI Agent", "type": "@n8n/n8n-nodes-langchain.agent", "typeVersion": 1.7, "position": [260, 0]
+    },
+    {
+      "parameters": { "modelName": "models/gemini-2.5-flash", "options": {} },
+      "id": "d3", "name": "Gemini Chat Model", "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini", "typeVersion": 1, "position": [100, 240]
+    },
+    {
+      "parameters": {},
+      "id": "d4", "name": "Simple Memory", "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow", "typeVersion": 1.3, "position": [260, 240]
+    },
+    {
+      "parameters": { "toolDescription": "מחזיר סכום הוצאות כולל ולפי קטגוריה", "url": "http://server:3105/summary", "options": {} },
+      "id": "d5", "name": "get_summary", "type": "n8n-nodes-base.httpRequestTool", "typeVersion": 4.2, "position": [420, 240]
+    },
+    {
+      "parameters": { "toolDescription": "מחזיר את רשימת כל ההוצאות", "url": "http://server:3105/expenses", "options": {} },
+      "id": "d6", "name": "get_expenses", "type": "n8n-nodes-base.httpRequestTool", "typeVersion": 4.2, "position": [580, 240]
+    },
+    {
+      "parameters": {
+        "toolDescription": "מוסיף הוצאה חדשה", "method": "POST", "url": "http://server:3105/expenses", "sendBody": true,
+        "bodyParameters": { "parameters": [
+          { "name": "title", "value": "={{ $fromAI('title', 'שם ההוצאה', 'string') }}" },
+          { "name": "amount", "value": "={{ $fromAI('amount', 'הסכום בשקלים', 'number') }}" },
+          { "name": "category", "value": "={{ $fromAI('category', 'אחת מ: אוכל, תחבורה, בילויים, כללי', 'string') }}" }
+        ] },
+        "options": {}
+      },
+      "id": "d7", "name": "create_expense", "type": "n8n-nodes-base.httpRequestTool", "typeVersion": 4.2, "position": [740, 240]
+    }
+  ],
+  "connections": {
+    "On chat message": { "main": [[{ "node": "AI Agent", "type": "main", "index": 0 }]] },
+    "Gemini Chat Model": { "ai_languageModel": [[{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]] },
+    "Simple Memory": { "ai_memory": [[{ "node": "AI Agent", "type": "ai_memory", "index": 0 }]] },
+    "get_summary": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
+    "get_expenses": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
+    "create_expense": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

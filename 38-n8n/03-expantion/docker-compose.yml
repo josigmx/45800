@@ -28,6 +28,7 @@ services:
       DB_USER: appuser
       DB_PASSWORD: app123
       DB_NAME: expenses_db
+      N8N_ALERT_URL: http://n8n:5678/webhook/big-expense
     depends_on:
       - mysql
     healthcheck:
@@ -43,5 +44,21 @@ services:
       - server
     restart: unless-stopped
 
+  # n8n: http://localhost:5678 (from n8n to the server: http://server:3105)
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=Asia/Jerusalem
+      - TZ=Asia/Jerusalem
+      - N8N_SECURE_COOKIE=false
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - server
+    restart: unless-stopped
+
 volumes:
   mysql_data:
+  n8n_data:

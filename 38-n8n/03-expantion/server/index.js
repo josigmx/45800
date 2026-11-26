@@ -52,8 +52,34 @@ app.get('/expenses/:id', async (req, res) => {
 
 app.post('/expenses', async (req, res) => {
     try {
-        let [rows] = await pool.query('INSERT INTO expenses (title, description, amount, category) VALUES (?, ?, ?, ?)', [req.body.title, req.body.description, req.body.amount, req.body.category]);
+        let [rows] = await pool.query('INSERT INTO expenses (title, description, amount, category) VALUES (?, ?, ?, ?)', [req.body.title, req.body.description || '', req.body.amount, req.body.category || 'כללי']);
+
+        // big expense (500+) -> send it to n8n (automation 3)
+        if (Number(req.body.amount) >= 500 && process.env.N8N_ALERT_URL) {
+            fetch(process.env.N8N_ALERT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(req.body),
+            }).catch((err) => console.log('n8n alert failed:', err.message));
+        }
+
         res.json(rows);
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
+// total + total per category (automations 2 and 4)
+app.get('/summary', async (req, res) => {
+    try {
+        let [rows] = await pool.query('SELECT category, SUM(amount) AS total FROM expenses GROUP BY category');
+        let byCategory = {};
+        let total = 0;
+        for (let r of rows) {
+            byCategory[r.category] = Number(r.total);
+            total += Number(r.total);
+        }
+        res.json({ total, byCategory });
     } catch (err) {
         res.status(500).json({ ok: false, error: err.message });
     }
