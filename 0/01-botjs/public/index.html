@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>New task</title>
+  <!-- Telegram's script: gives us window.Telegram.WebApp -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    /* --tg-theme-*: the colors of the user's Telegram theme (light / dark) */
+    body {
+      font-family: system-ui, sans-serif; margin: 0; padding: 20px;
+      background: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #222);
+    }
+    h1 { font-size: 22px; margin: 0 0 16px; }
+    label { display: block; font-weight: 600; margin: 14px 0 6px; }
+    input, select, textarea {
+      width: 100%; box-sizing: border-box; padding: 12px; font-size: 16px; border-radius: 10px;
+      border: 1px solid #ccc; background: var(--tg-theme-secondary-bg-color, #f4f4f5); color: inherit;
+      font-family: inherit;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    .hint { font-size: 13px; opacity: 0.6; margin-top: 4px; }
+    button {
+      width: 100%; margin-top: 24px; padding: 14px; font-size: 17px; font-weight: 700; border: 0; border-radius: 10px;
+      background: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #fff);
+    }
+    .error { color: #d33; min-height: 20px; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <h1>📝 New task</h1>
+  <form id="form">
+    <label for="title">Title</label>
+    <input id="title" placeholder="e.g. Buy milk" required>
+
+    <label for="priority">Priority</label>
+    <select id="priority">
+      <option value="high">🔴 High</option>
+      <option value="normal" selected>🟡 Normal</option>
+      <option value="low">🟢 Low</option>
+    </select>
+
+    <label for="due">Due date</label>
+    <input id="due" type="date">
+
+    <!-- Exercise 3: the new field -->
+    <label for="notes">Notes</label>
+    <textarea id="notes" maxlength="500" placeholder="Anything else to remember?"></textarea>
+    <div class="hint">Optional, up to 500 characters</div>
+
+    <div class="error" id="error"></div>
+    <button type="submit">Save task</button>
+  </form>
+
+  <script>
+    const tg = window.Telegram.WebApp
+    tg.ready()    // tells Telegram the page is loaded
+    tg.expand()   // open the Mini App at full height
+
+    document.getElementById('form').addEventListener('submit', (e) => {
+      e.preventDefault()
+      const title = document.getElementById('title').value.trim()
+      if (title.length < 2) {
+        document.getElementById('error').textContent = 'The title is too short'
+        return
+      }
+      const data = {
+        title,
+        priority: document.getElementById('priority').value,
+        due: document.getElementById('due').value,       // "" when empty, or YYYY-MM-DD
+        notes: document.getElementById('notes').value.trim(), // Exercise 3
+      }
+      // sends the data to the bot as a message (message:web_app_data) and closes the Mini App
+      // the limit is 4096 bytes, so the notes are capped at 500 characters
+      tg.sendData(JSON.stringify(data))
+    })
+  </script>
+</body>
+</html>
